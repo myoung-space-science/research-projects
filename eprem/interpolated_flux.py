@@ -13,6 +13,7 @@ import eprem.tools as tools
 def main(
     psp_path: str,
     stream: int,
+    psp_radius: float=None,
     time_unit: str='days',
     utc_start: str=None,
     data_dir: str='./',
@@ -40,7 +41,7 @@ def main(
                 offset=event_offset-utc_offset,
                 zero=True,
             ),
-            eprem.flux(energy, radius=0.808122),
+            eprem.flux(energy, radius=psp_radius),
             label=f'{energy:.1f} MeV',
             color=color,
         )
@@ -106,6 +107,16 @@ if __name__ == '__main__':
         'stream',
         help="EPREM stream number to show",
         type=int,
+    )
+    p.add_argument(
+        '--psp_radius',
+        help=(
+            "the radius of PSP at the time of comparison"
+            "\n\nif dataset type is 'full', this routine will interpolate EPREM"
+            "\noutput to this radius; if dataset type is 'stat', it will ignore"
+            "\nthis parameter"
+        ),
+        type=float,
     )
     p.add_argument(
         '--time_unit',
