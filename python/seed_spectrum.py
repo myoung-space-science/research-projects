@@ -8,8 +8,8 @@ import matplotlib.lines as mlines
 from matplotlib.legend import Legend
 import numpy as np
 
-import tools
-import seed
+import python.tools as tools
+import python.seed as seed
 
 
 def main(
