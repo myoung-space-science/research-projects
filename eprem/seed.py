@@ -4,7 +4,7 @@ from typing import Callable, Union
 
 import numpy as np
 
-from fits import FlexiFit
+from .fits import FlexiFit
 
 equation = (
     r"$J(E,r) = "

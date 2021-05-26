@@ -7,7 +7,7 @@ from matplotlib.lines import Line2D
 from matplotlib.ticker import AutoMinorLocator
 import numpy as np
 
-import tools
+from eprem import tools
 
 
 def main(
