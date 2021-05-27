@@ -70,18 +70,20 @@ def plot_flux(
     """Plot PSP and EPREM flux at interpolated radius and energies."""
     psp_start = psp.utc[0]
     event_offset, utc_offset = get_offsets(psp_start, utc_start)
+    eprem_offset = event_offset - utc_offset
+    psp_offset = -utc_offset
     energies = psp.energy('means')
     colors = tools.get_colors('viridis', n=len(energies))
     eprem_time = eprem.time(
         time_unit,
-        offset=event_offset-utc_offset,
+        offset=eprem_offset,
         zero=True,
     )
     eprem_flux = np.array([
         eprem.flux(energy, radius=psp_radius)
         for energy in energies
     ]).transpose()
-    psp_time = psp.time(time_unit, offset=-utc_offset, zero=True)
+    psp_time = psp.time(time_unit, offset=psp_offset, zero=True)
     psp_flux = psp.flux
     labels = [f'{energy:.1f} MeV' for energy in energies]
     for (i, label), color in zip(enumerate(labels), colors):
