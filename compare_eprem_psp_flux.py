@@ -43,11 +43,12 @@ def main(
         for energy in energies
     ]).transpose()
     psp_time = psp.time(time_unit, offset=-utc_offset, zero=True)
-    for (i, energy), color in zip(enumerate(energies), colors):
+    labels = [f'{energy:.1f} MeV' for energy in energies]
+    for (i, label), color in zip(enumerate(labels), colors):
         plt.plot(
             eprem_time,
             eprem_flux[:, i],
-            label=f'{energy:.1f} MeV',
+            label=label,
             color=color,
         )
         plt.plot(
