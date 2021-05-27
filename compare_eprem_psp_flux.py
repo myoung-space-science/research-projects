@@ -25,20 +25,32 @@ def main(
     verbose: bool=False,
 ):
     """Plot PSP and EPREM proton flux."""
-
     psp = tools.PSP(psp_path)
     eprem = tools.get_eprem(stream, data_dir, dataset_type)
     plt.figure(figsize=(10, 5))
     time_start = utc_start or psp.utc[0]
     plot_flux(psp, eprem, psp_radius, time_unit, utc_start)
+    update_axes(time_unit, time_start, xlim=xlim, ylim=ylim, title=title)
+    add_legends(stream)
+    plt.tight_layout()
+    tools.finalize_plot(plot_path, verbose=verbose)
+
+
+def update_axes(time_unit, time_start, **kwargs):
     plt.yscale('log')
-    if xlim:
-        plt.xlim(*xlim)
-    if ylim:
-        plt.ylim(*ylim)
+    if 'xlim' in kwargs:
+        plt.xlim(*kwargs['xlim'])
+    if 'ylim' in kwargs:
+        plt.ylim(*kwargs['ylim'])
     plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
     plt.xlabel(f'{time_unit.capitalize()} since {time_start} UTC')
     plt.ylabel(r'protons / cm$^2$ s sr MeV')
+    if 'title' in kwargs:
+        plt.title(kwargs['title'])
+
+
+def add_legends(stream: int) -> None:
+    """Add energy-bin and plot-marker legends."""
     psp_symbol = Line2D([0], [0], linestyle='None', marker='o', color='black')
     psp_label = f"PSP"
     eprem_symbol = Line2D([0], [0], linestyle='solid', color='black')
@@ -54,10 +66,6 @@ def main(
         borderaxespad=0
     )
     plt.gca().add_artist(leg)
-    if title:
-        plt.title(title)
-    plt.tight_layout()
-    tools.finalize_plot(plot_path, verbose=verbose)
 
 
 def plot_flux(
