@@ -28,9 +28,9 @@ def main(
 
     psp = tools.PSP(psp_path)
     eprem = tools.get_eprem(stream, data_dir, dataset_type)
+    plt.figure(figsize=(10, 5))
     psp_start = psp.utc[0]
     event_offset, utc_offset = get_offsets(psp_start, utc_start)
-    plt.figure(figsize=(10, 5))
     energies = psp.energy('means')
     colors = tools.get_colors('viridis', n=len(energies))
     eprem_time = eprem.time(
@@ -43,6 +43,7 @@ def main(
         for energy in energies
     ]).transpose()
     psp_time = psp.time(time_unit, offset=-utc_offset, zero=True)
+    psp_flux = psp.flux
     labels = [f'{energy:.1f} MeV' for energy in energies]
     for (i, label), color in zip(enumerate(labels), colors):
         plt.plot(
@@ -53,7 +54,7 @@ def main(
         )
         plt.plot(
             psp_time,
-            psp.flux[:, i],
+            psp_flux[:, i],
             marker='o',
             linestyle='',
             color=color,
