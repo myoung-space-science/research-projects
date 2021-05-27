@@ -38,11 +38,15 @@ def main(
         offset=event_offset-utc_offset,
         zero=True,
     )
+    eprem_flux = np.array([
+        eprem.flux(energy, radius=psp_radius)
+        for energy in energies
+    ]).transpose()
     psp_time = psp.time(time_unit, offset=-utc_offset, zero=True)
     for (i, energy), color in zip(enumerate(energies), colors):
         plt.plot(
             eprem_time,
-            eprem.flux(energy, radius=psp_radius),
+            eprem_flux[:, i],
             label=f'{energy:.1f} MeV',
             color=color,
         )
