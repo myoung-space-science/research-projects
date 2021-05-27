@@ -33,19 +33,21 @@ def main(
     plt.figure(figsize=(10, 5))
     energies = psp.energy('means')
     colors = tools.get_colors('viridis', n=len(energies))
+    eprem_time = eprem.time(
+        time_unit,
+        offset=event_offset-utc_offset,
+        zero=True,
+    )
+    psp_time = psp.time(time_unit, offset=-utc_offset, zero=True)
     for (i, energy), color in zip(enumerate(energies), colors):
         plt.plot(
-            eprem.time(
-                time_unit,
-                offset=event_offset-utc_offset,
-                zero=True,
-            ),
+            eprem_time,
             eprem.flux(energy, radius=psp_radius),
             label=f'{energy:.1f} MeV',
             color=color,
         )
         plt.plot(
-            psp.time(time_unit, offset=-utc_offset, zero=True),
+            psp_time,
             psp.flux[:, i],
             marker='o',
             linestyle='',
