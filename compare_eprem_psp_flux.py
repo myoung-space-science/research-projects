@@ -31,9 +31,8 @@ def main(
     psp_start = psp.utc[0]
     event_offset, utc_offset = get_offsets(psp_start, utc_start)
     plt.figure(figsize=(10, 5))
-    cmap = plt.get_cmap('viridis')
     energies = psp.energy('means')
-    colors = [cmap(i) for i in np.linspace(0, 1, len(energies))]
+    colors = tools.get_colors('viridis', n=len(energies))
     for (i, energy), color in zip(enumerate(energies), colors):
         plt.plot(
             eprem.time(

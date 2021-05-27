@@ -109,6 +109,12 @@ def find_1d_indices(array: np.ndarray, target: float) -> Tuple[int, int]:
     return lower, upper
 
 
+def get_colors(name: str, n: int=32) -> List[Tuple[int, ...]]:
+    """Get an array of colors drawn from the named color map."""
+    cmap = plt.get_cmap(name)
+    return [cmap(i) for i in np.linspace(0, 1, n)]
+
+
 def datestr2sec(datestr: str) -> float:
     """Convert a date/time string to seconds since the start of the year."""
     dt = datetime.datetime.strptime(datestr, '%Y-%jT%H:%M:%S.%f')
