@@ -29,6 +29,45 @@ def main(
     psp = tools.PSP(psp_path)
     eprem = tools.get_eprem(stream, data_dir, dataset_type)
     plt.figure(figsize=(10, 5))
+    time_start = utc_start or psp.utc[0]
+    plot_flux(psp_radius, time_unit, utc_start, psp, eprem)
+    plt.yscale('log')
+    if xlim:
+        plt.xlim(*xlim)
+    if ylim:
+        plt.ylim(*ylim)
+    plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
+    plt.xlabel(f'{time_unit.capitalize()} since {time_start} UTC')
+    plt.ylabel(r'protons / cm$^2$ s sr MeV')
+    psp_symbol = Line2D([0], [0], linestyle='None', marker='o', color='black')
+    psp_label = f"PSP"
+    eprem_symbol = Line2D([0], [0], linestyle='solid', color='black')
+    eprem_label = f"EPREM stream {stream}"
+    leg = plt.legend(
+        [psp_symbol, eprem_symbol],
+        [psp_label, eprem_label],
+        loc='upper left',
+    )
+    plt.legend(
+        bbox_to_anchor=(1.01, 0.5),
+        loc='center left',
+        borderaxespad=0
+    )
+    plt.gca().add_artist(leg)
+    if title:
+        plt.title(title)
+    plt.tight_layout()
+    tools.finalize_plot(plot_path, verbose=verbose)
+
+
+def plot_flux(
+    psp: tools.PSP,
+    eprem: tools.EPREMData,
+    psp_radius: float=None,
+    time_unit: str='days',
+    utc_start: str=None,
+) -> None:
+    """Plot PSP and EPREM flux at interpolated radius and energies."""
     psp_start = psp.utc[0]
     event_offset, utc_offset = get_offsets(psp_start, utc_start)
     energies = psp.energy('means')
@@ -59,33 +98,6 @@ def main(
             linestyle='',
             color=color,
         )
-    plt.yscale('log')
-    if xlim:
-        plt.xlim(*xlim)
-    if ylim:
-        plt.ylim(*ylim)
-    plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
-    plt.xlabel(f'{time_unit.capitalize()} since {utc_start or psp_start} UTC')
-    plt.ylabel(r'protons / cm$^2$ s sr MeV')
-    psp_symbol = Line2D([0], [0], linestyle='None', marker='o', color='black')
-    psp_label = f"PSP"
-    eprem_symbol = Line2D([0], [0], linestyle='solid', color='black')
-    eprem_label = f"EPREM stream {stream}"
-    leg = plt.legend(
-        [psp_symbol, eprem_symbol],
-        [psp_label, eprem_label],
-        loc='upper left',
-    )
-    plt.legend(
-        bbox_to_anchor=(1.01, 0.5),
-        loc='center left',
-        borderaxespad=0
-    )
-    plt.gca().add_artist(leg)
-    if title:
-        plt.title(title)
-    plt.tight_layout()
-    tools.finalize_plot(plot_path, verbose=verbose)
 
 
 def get_offsets(psp_start: str, utc_start: str=None) -> Tuple[float, ...]:
