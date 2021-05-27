@@ -28,25 +28,15 @@ def main(
     psp = tools.PSP(psp_path)
     eprem = tools.get_eprem(stream, data_dir, dataset_type)
     plt.figure(figsize=(10, 5))
-    time_start = utc_start or psp.utc[0]
+    plt.axes(xlim=xlim, ylim=ylim, title=title, yscale='log')
+    plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
     plot_flux(psp, eprem, psp_radius, time_unit, utc_start)
-    update_axes(time_unit, time_start, xlim=xlim, ylim=ylim, title=title)
+    time_start = utc_start or psp.utc[0]
+    plt.xlabel(f'{time_unit.capitalize()} since {time_start} UTC')
+    plt.ylabel(r'protons / cm$^2$ s sr MeV')
     add_legends(stream)
     plt.tight_layout()
     tools.finalize_plot(plot_path, verbose=verbose)
-
-
-def update_axes(time_unit, time_start, **kwargs):
-    plt.yscale('log')
-    if 'xlim' in kwargs:
-        plt.xlim(*kwargs['xlim'])
-    if 'ylim' in kwargs:
-        plt.ylim(*kwargs['ylim'])
-    plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
-    plt.xlabel(f'{time_unit.capitalize()} since {time_start} UTC')
-    plt.ylabel(r'protons / cm$^2$ s sr MeV')
-    if 'title' in kwargs:
-        plt.title(kwargs['title'])
 
 
 def add_legends(stream: int) -> None:
