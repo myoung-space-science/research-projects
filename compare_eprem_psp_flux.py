@@ -30,7 +30,7 @@ def main(
     eprem = tools.get_eprem(stream, data_dir, dataset_type)
     plt.figure(figsize=(10, 5))
     time_start = utc_start or psp.utc[0]
-    plot_flux(psp_radius, time_unit, utc_start, psp, eprem)
+    plot_flux(psp, eprem, psp_radius, time_unit, utc_start)
     plt.yscale('log')
     if xlim:
         plt.xlim(*xlim)
@@ -74,28 +74,42 @@ def plot_flux(
     psp_offset = -utc_offset
     energies = psp.energy('means')
     colors = tools.get_colors('viridis', n=len(energies))
-    eprem_time = eprem.time(
-        time_unit,
-        offset=eprem_offset,
-        zero=True,
-    )
-    eprem_flux = np.array([
-        eprem.flux(energy, radius=psp_radius)
-        for energy in energies
-    ]).transpose()
-    psp_time = psp.time(time_unit, offset=psp_offset, zero=True)
-    psp_flux = psp.flux
+    eprem_data = {
+        'time': eprem.time(
+            time_unit,
+            offset=eprem_offset,
+            zero=True,
+        ),
+        'flux': np.array([
+            eprem.flux(energy, radius=psp_radius)
+            for energy in energies
+        ]).transpose()
+    }
+    psp_data = {
+        'time': psp.time(time_unit, offset=psp_offset, zero=True),
+        'flux': psp.flux,
+    }
     labels = [f'{energy:.1f} MeV' for energy in energies]
+    plot_loop(eprem_data, psp_data, labels, colors)
+
+
+def plot_loop(
+    eprem_data: dict,
+    psp_data: dict,
+    labels: list,
+    colors: list,
+) -> None:
+    """The main logic for plotting EPREM v. PSP flux."""
     for (i, label), color in zip(enumerate(labels), colors):
         plt.plot(
-            eprem_time,
-            eprem_flux[:, i],
+            eprem_data['time'],
+            eprem_data['flux'][:, i],
             label=label,
             color=color,
         )
         plt.plot(
-            psp_time,
-            psp_flux[:, i],
+            psp_data['time'],
+            psp_data['flux'][:, i],
             marker='o',
             linestyle='',
             color=color,
