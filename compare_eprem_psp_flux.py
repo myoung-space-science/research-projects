@@ -88,6 +88,7 @@ def get_flux_data(
     )
     return energies, eprem_data, psp_data
 
+
 def get_eprem_flux(
     eprem: tools.EPREMData,
     energies: Iterable=None,
