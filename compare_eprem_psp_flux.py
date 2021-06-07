@@ -65,7 +65,7 @@ def get_flux_data(
     psp_radius: float=None,
     time_unit: str='days',
     utc_start: str=None,
-) -> None:
+) -> tuple:
     """Plot PSP and EPREM flux at interpolated radius and energies."""
     energies = psp.energy('means')
     psp_start = psp.utc[0]
@@ -104,7 +104,7 @@ def get_eprem_flux(
     }
 
 
-def get_psp_flux(psp: tools.PSP, **time_kwargs) -> None:
+def get_psp_flux(psp: tools.PSP, **time_kwargs) -> dict:
     """Create a dictionary containing PSP time and flux data."""
     return {
         'time': psp.time(**time_kwargs),
