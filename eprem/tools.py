@@ -158,9 +158,18 @@ def finalize_plot(path: Union[str, Path]=None, verbose: bool=False):
 
 class EPREMData(abc.ABC):
     """Abstract Base Class for EPREM simulation results."""
-    def __init__(self, number: int, directory: str) -> None:
+    def __init__(
+        self,
+        number: int=None,
+        directory: Union[str, Path]=None,
+        path: Union[str, Path]=None,
+    ) -> None:
         """
-        Positional Parameters
+        The user may create an instance of this class by passing either a stream
+        number and the name of a directory containing EPREM output, or a
+        complete path to a stream-observer dataset.
+
+        Keyword Parameters
         ---------------------
         number : int
 
@@ -168,12 +177,27 @@ class EPREMData(abc.ABC):
 
         directory : str or pathlib.Path
 
-        The path to a directory containing STAT files with radially-interpolated
-        flux. May be relative and contain wildcards.
+        The path to a directory containing EPREM stream-observer datasets or
+        STAT files with radially-interpolated flux. May be relative and contain
+        wildcards.
+
+        path : str or pathlib.Path
+
+        The path to an EPREM stream-observer dataset. May be relative and
+        contain wildcards.
         """
-        self.number = number
-        self.directory = Path(directory).expanduser().resolve()
-        self._dataset = None
+        if (number and directory) or path:
+            self._number = number
+            # self.directory = Path(directory).expanduser().resolve()
+            self._directory = directory
+            self._path = path
+            self._dataset = None
+        else:
+            message = (
+                "You must provide either a stream number and directory"
+                " or the path to a dataset."
+            )
+            raise TypeError(message) from None
 
     def time(
         self,
@@ -206,9 +230,13 @@ class EPREMData(abc.ABC):
         return interp(energy)
 
     @property
-    @abc.abstractmethod
     def path(self) -> Path:
         """The full path to simulation data."""
+        return self._build_path()
+
+    @abc.abstractmethod
+    def _build_path(self) -> Path:
+        """Get the full path to simulation data."""
         pass
 
     @property
@@ -243,10 +271,11 @@ class EPREMData(abc.ABC):
 
 class STAT(EPREMData):
     """The radially-interpolated STAT data."""
-    @property
-    def path(self) -> Path:
-        """The full path to simulation data."""
-        return self.directory / f'flux_sp00_{self.number:06d}.dat'
+    def _build_path(self) -> Path:
+        """Build the full path to simulation data."""
+        if self._directory and self._number:
+            return self._directory / f'flux_sp00_{self._number:06d}.dat'
+        return self._path
 
     @property
     def energy(self) -> np.ndarray:
@@ -269,10 +298,11 @@ class STAT(EPREMData):
 
 class EPREM(EPREMData):
     """The EPREM dataset with pre-computed flux."""
-    @property
-    def path(self) -> Path:
-        """The full path to simulation data."""
-        return self.directory / f'flux{self.number:06d}.nc'
+    def _build_path(self) -> Path:
+        """Build the full path to simulation data."""
+        if self._directory and self._number:
+            return self._directory / f'flux{self._number:06d}.nc'
+        return self._path
 
     @property
     def energy(self) -> np.ndarray:
@@ -315,7 +345,7 @@ class EPREM(EPREMData):
         return super().flux(energy, radius=radius)
 
 
-def get_eprem(stream: int, directory: str, dataset_type: str) -> EPREMData:
+def get_eprem(dataset_type: str, **kwargs) -> EPREMData:
     """Create the appropriate object to manage an EPREM dataset."""
     dataset_types = {
         'full': EPREM,
@@ -325,7 +355,7 @@ def get_eprem(stream: int, directory: str, dataset_type: str) -> EPREMData:
         Dataset = dataset_types[dataset_type]
     except KeyError:
         raise TypeError(f"Unknown dataset type: {dataset_type}")
-    return Dataset(stream, directory)
+    return Dataset(**kwargs)
 
 
 class PSP:
