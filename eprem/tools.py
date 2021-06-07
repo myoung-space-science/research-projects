@@ -353,9 +353,9 @@ def get_eprem(dataset_type: str, **kwargs) -> EPREMData:
     }
     try:
         Dataset = dataset_types[dataset_type]
+        return Dataset(**kwargs)
     except KeyError:
         raise TypeError(f"Unknown dataset type: {dataset_type}")
-    return Dataset(**kwargs)
 
 
 class PSP:
