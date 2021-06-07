@@ -188,8 +188,7 @@ class EPREMData(abc.ABC):
         """
         if (number and directory) or path:
             self._number = number
-            # self.directory = Path(directory).expanduser().resolve()
-            self._directory = directory
+            self._directory = Path(directory).expanduser().resolve()
             self._path = path
             self._dataset = None
         else:
