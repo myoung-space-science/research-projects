@@ -30,7 +30,8 @@ def main(
     plt.figure(figsize=(10, 5))
     plt.axes(xlim=xlim, ylim=ylim, title=title, yscale='log')
     plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
-    plot_flux(psp, eprem, psp_radius, time_unit, utc_start)
+    data = get_flux_data(psp, eprem, psp_radius, time_unit, utc_start)
+    plot_loop(*data)
     time_start = utc_start or psp.utc[0]
     plt.xlabel(f'{time_unit.capitalize()} since {time_start} UTC')
     plt.ylabel(r'protons / cm$^2$ s sr MeV')
@@ -58,7 +59,7 @@ def add_legends(stream: int) -> None:
     plt.gca().add_artist(leg)
 
 
-def plot_flux(
+def get_flux_data(
     psp: tools.PSP,
     eprem: tools.EPREMData,
     psp_radius: float=None,
@@ -86,7 +87,7 @@ def plot_flux(
         'time': psp.time(time_unit, offset=psp_offset, zero=True),
         'flux': psp.flux,
     }
-    plot_loop(energies, eprem_data, psp_data)
+    return energies, eprem_data, psp_data
 
 
 def plot_loop(
