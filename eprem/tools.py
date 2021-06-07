@@ -453,6 +453,31 @@ class PSP:
         return self._utc
 
 
+def get_eprem_flux(
+    eprem: EPREMData,
+    energies: Iterable=None,
+    radius: float=None,
+    **time_kwargs,
+) -> dict:
+    """Create a dictionary containing EPREM time and flux data."""
+    return {
+        'time': eprem.time(**time_kwargs),
+        'flux': np.array([
+            eprem.flux(energy, radius=radius)
+            for energy in energies
+        ]).transpose()
+    }
+
+
+def get_psp_flux(psp: PSP, **time_kwargs) -> dict:
+    """Create a dictionary containing PSP time and flux data."""
+    return {
+        'time': psp.time(**time_kwargs),
+        'flux': psp.flux,
+    }
+
+
+
 def split_key_value_pairs(
     pairs: Iterable,
     totype: type=None,
