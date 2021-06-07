@@ -72,22 +72,44 @@ def get_flux_data(
     event_offset, utc_offset = get_offsets(psp_start, utc_start)
     eprem_offset = event_offset - utc_offset
     psp_offset = -utc_offset
-    eprem_data = {
-        'time': eprem.time(
-            time_unit,
-            offset=eprem_offset,
-            zero=True,
-        ),
+    eprem_data = get_eprem_flux(
+        eprem,
+        energies=energies,
+        radius=psp_radius,
+        units=time_unit,
+        offset=eprem_offset,
+        zero=True,
+    )
+    psp_data = get_psp_flux(
+        psp,
+        units=time_unit,
+        offset=psp_offset,
+        zero=True,
+    )
+    return energies, eprem_data, psp_data
+
+def get_eprem_flux(
+    eprem: tools.EPREMData,
+    energies: Iterable=None,
+    radius: float=None,
+    **time_kwargs,
+) -> dict:
+    """Create a dictionary containing EPREM time and flux data."""
+    return {
+        'time': eprem.time(**time_kwargs),
         'flux': np.array([
-            eprem.flux(energy, radius=psp_radius)
+            eprem.flux(energy, radius=radius)
             for energy in energies
         ]).transpose()
     }
-    psp_data = {
-        'time': psp.time(time_unit, offset=psp_offset, zero=True),
+
+
+def get_psp_flux(psp: tools.PSP, **time_kwargs) -> None:
+    """Create a dictionary containing PSP time and flux data."""
+    return {
+        'time': psp.time(**time_kwargs),
         'flux': psp.flux,
     }
-    return energies, eprem_data, psp_data
 
 
 def plot_loop(
