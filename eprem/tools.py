@@ -186,11 +186,15 @@ class EPREMData(abc.ABC):
         The path to an EPREM stream-observer dataset. May be relative and
         contain wildcards.
         """
-        if (number and directory) or path:
+        self._dataset = None
+        if number and directory:
             self._number = number
             self._directory = Path(directory).expanduser().resolve()
-            self._path = path
-            self._dataset = None
+            self._path = None
+        elif path:
+            self._number = None
+            self._directory = None
+            self._path = Path(path).expanduser().resolve()
         else:
             message = (
                 "You must provide either a stream number and directory"
