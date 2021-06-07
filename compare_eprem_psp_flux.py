@@ -69,7 +69,7 @@ def get_flux_data(
     """Plot PSP and EPREM flux at interpolated radius and energies."""
     energies = psp.energy('means')
     psp_start = psp.utc[0]
-    event_offset, utc_offset = get_offsets(psp_start, utc_start)
+    event_offset, utc_offset = tools.get_time_offsets(psp_start, utc_start)
     eprem_offset = event_offset - utc_offset
     psp_offset = -utc_offset
     eprem_data = tools.get_eprem_flux(
@@ -111,17 +111,6 @@ def plot_loop(
             linestyle='',
             color=color,
         )
-
-
-def get_offsets(psp_start: str, utc_start: str=None) -> Tuple[float, ...]:
-    event_start = '2020-334T12:45:00'
-    event_time = datetime.datetime.strptime(event_start, "%Y-%jT%H:%M:%S")
-    psp_time = datetime.datetime.strptime(psp_start, "%Y-%jT%H:%M:%S.%f")
-    event_offset = (event_time - psp_time).total_seconds()
-    if utc_start:
-        utc_time = datetime.datetime.strptime(utc_start, "%Y-%m-%d %H:%M:%S")
-        return event_offset, (utc_time - psp_time).total_seconds()
-    return event_offset, 0.0
 
 
 if __name__ == '__main__':

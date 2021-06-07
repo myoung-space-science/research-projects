@@ -477,6 +477,16 @@ def get_psp_flux(psp: PSP, **time_kwargs) -> dict:
     }
 
 
+def get_time_offsets(psp_start: str, utc_start: str=None) -> Tuple[float, ...]:
+    event_start = '2020-334T12:45:00'
+    event_time = datetime.datetime.strptime(event_start, "%Y-%jT%H:%M:%S")
+    psp_time = datetime.datetime.strptime(psp_start, "%Y-%jT%H:%M:%S.%f")
+    event_offset = (event_time - psp_time).total_seconds()
+    if utc_start:
+        utc_time = datetime.datetime.strptime(utc_start, "%Y-%m-%d %H:%M:%S")
+        return event_offset, (utc_time - psp_time).total_seconds()
+    return event_offset, 0.0
+
 
 def split_key_value_pairs(
     pairs: Iterable,
