@@ -66,12 +66,11 @@ def plot_flux(
     utc_start: str=None,
 ) -> None:
     """Plot PSP and EPREM flux at interpolated radius and energies."""
+    energies = psp.energy('means')
     psp_start = psp.utc[0]
     event_offset, utc_offset = get_offsets(psp_start, utc_start)
     eprem_offset = event_offset - utc_offset
     psp_offset = -utc_offset
-    energies = psp.energy('means')
-    colors = tools.get_colors('viridis', n=len(energies))
     eprem_data = {
         'time': eprem.time(
             time_unit,
@@ -87,17 +86,17 @@ def plot_flux(
         'time': psp.time(time_unit, offset=psp_offset, zero=True),
         'flux': psp.flux,
     }
-    labels = [f'{energy:.1f} MeV' for energy in energies]
-    plot_loop(eprem_data, psp_data, labels, colors)
+    plot_loop(energies, eprem_data, psp_data)
 
 
 def plot_loop(
+    energies: Iterable,
     eprem_data: dict,
     psp_data: dict,
-    labels: list,
-    colors: list,
 ) -> None:
     """The main logic for plotting EPREM v. PSP flux."""
+    colors = tools.get_colors('viridis', n=len(energies))
+    labels = [f'{energy:.1f} MeV' for energy in energies]
     for (i, label), color in zip(enumerate(labels), colors):
         plt.plot(
             eprem_data['time'],
