@@ -26,7 +26,7 @@ def main(
 ):
     """Plot PSP and EPREM proton flux."""
     psp = tools.PSP(psp_path)
-    eprem = tools.get_eprem(stream, data_dir, dataset_type)
+    eprem = tools.get_eprem(dataset_type, number=stream, directory=data_dir)
     plt.figure(figsize=(10, 5))
     plt.axes(xlim=xlim, ylim=ylim, title=title, yscale='log')
     plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
