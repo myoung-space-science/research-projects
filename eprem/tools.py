@@ -109,10 +109,12 @@ def find_1d_indices(array: np.ndarray, target: float) -> Tuple[int, int]:
     return lower, upper
 
 
-def get_colors(name: str, n: int=32) -> List[Tuple[int, ...]]:
+def get_colors(name: str=None, n: int=32) -> List[Tuple[int, ...]]:
     """Get an array of colors drawn from the named color map."""
-    cmap = plt.get_cmap(name)
-    return [cmap(i) for i in np.linspace(0, 1, n)]
+    if name:
+        cmap = plt.get_cmap(name)
+        return [cmap(i) for i in np.linspace(0, 1, n)]
+    return [f'C{i}' for i in range(n)]
 
 
 def datestr2sec(datestr: str) -> float:
