@@ -13,6 +13,7 @@ from eprem import tools
 def main(
     psp_path: str,
     stream: int,
+    event_utc: str,
     psp_radius: float=None,
     time_unit: str='days',
     utc_start: str=None,
@@ -30,7 +31,9 @@ def main(
     plt.figure(figsize=(10, 5))
     plt.axes(xlim=xlim, ylim=ylim, title=title, yscale='log')
     plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
-    data = get_flux_data(psp, eprem, psp_radius, time_unit, utc_start)
+    data = get_flux_data(
+        psp, eprem, event_utc, psp_radius, time_unit, utc_start
+    )
     plot_loop(*data)
     time_start = utc_start or psp.utc[0]
     plt.xlabel(f'{time_unit.capitalize()} since {time_start} UTC')
@@ -62,6 +65,7 @@ def add_legends(stream: int) -> None:
 def get_flux_data(
     psp: tools.PSP,
     eprem: tools.EPREMData,
+    event_utc: str,
     psp_radius: float=None,
     time_unit: str='days',
     utc_start: str=None,
@@ -69,7 +73,9 @@ def get_flux_data(
     """Plot PSP and EPREM flux at interpolated radius and energies."""
     energies = psp.energy('means')
     psp_start = psp.utc[0]
-    event_offset, utc_offset = tools.get_time_offsets(psp_start, utc_start)
+    event_offset, utc_offset = tools.get_time_offsets(
+        psp_start, event_utc, utc_start
+    )
     eprem_offset = event_offset - utc_offset
     psp_offset = -utc_offset
     eprem_data = tools.get_eprem_flux(
@@ -128,6 +134,10 @@ if __name__ == '__main__':
         'stream',
         help="EPREM stream number to show",
         type=int,
+    )
+    p.add_argument(
+        'event_utc',
+        help="assumed UTC start time of observed event",
     )
     p.add_argument(
         '--psp_radius',
