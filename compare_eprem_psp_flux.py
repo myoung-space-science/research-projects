@@ -99,6 +99,7 @@ def get_flux_data(
     )
     psp_data = tools.get_psp_flux(
         psp,
+        energy_channels=energy_channels,
         units=time_unit,
         offset=psp_offset,
         zero=True,

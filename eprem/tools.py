@@ -475,8 +475,17 @@ def get_eprem_flux(
     }
 
 
-def get_psp_flux(psp: PSP, **time_kwargs) -> dict:
+def get_psp_flux(
+    psp: PSP,
+    energy_channels: Iterable=None,
+    **time_kwargs
+) -> dict:
     """Create a dictionary containing PSP time and flux data."""
+    if energy_channels:
+        return {
+            'time': psp.time(**time_kwargs),
+            'flux': psp.flux[:, energy_channels],
+        }
     return {
         'time': psp.time(**time_kwargs),
         'flux': psp.flux,
