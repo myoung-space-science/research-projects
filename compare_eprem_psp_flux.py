@@ -20,6 +20,7 @@ def main(
     energy_channels: Iterable=None,
     data_dir: str='./',
     dataset_type: str='full',
+    colormap: str=None,
     plot_path: str=None,
     xlim: tuple=None,
     ylim: tuple=None,
@@ -41,7 +42,7 @@ def main(
         utc_start=utc_start,
         energy_channels=energy_channels,
     )
-    plot_loop(*data)
+    plot_loop(*data, colormap=colormap)
     time_start = utc_start or psp.utc[0]
     plt.xlabel(f'{time_unit.capitalize()} since {time_start} UTC')
     plt.ylabel(r'protons / cm$^2$ s sr MeV')
@@ -109,9 +110,10 @@ def plot_loop(
     energies: Iterable,
     eprem_data: dict,
     psp_data: dict,
+    colormap: str=None,
 ) -> None:
     """The main logic for plotting EPREM v. PSP flux."""
-    colors = tools.get_colors('viridis', n=len(energies))
+    colors = tools.get_colors(colormap, n=len(energies))
     labels = [f'{energy:.1f} MeV' for energy in energies]
     for (i, label), color in zip(enumerate(labels), colors):
         plt.plot(
@@ -197,6 +199,10 @@ if __name__ == '__main__':
             ";\nmay be relative and contain wildcards"
             " (default: show plot on screen)"
         ),
+    )
+    p.add_argument(
+        '--colormap',
+        help="the colormap to use for plotting (default: Matplotlib default)",
     )
     p.add_argument(
         '--xlim',
