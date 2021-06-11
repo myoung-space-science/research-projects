@@ -17,6 +17,7 @@ def main(
     psp_radius: float=None,
     time_unit: str='days',
     utc_start: str=None,
+    energy_channels: Iterable=None,
     data_dir: str='./',
     dataset_type: str='full',
     plot_path: str=None,
@@ -32,7 +33,13 @@ def main(
     plt.axes(xlim=xlim, ylim=ylim, title=title, yscale='log')
     plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
     data = get_flux_data(
-        psp, eprem, event_utc, psp_radius, time_unit, utc_start
+        psp,
+        eprem,
+        event_utc,
+        psp_radius=psp_radius,
+        time_unit=time_unit,
+        utc_start=utc_start,
+        energy_channels=energy_channels,
     )
     plot_loop(*data)
     time_start = utc_start or psp.utc[0]
@@ -69,9 +76,12 @@ def get_flux_data(
     psp_radius: float=None,
     time_unit: str='days',
     utc_start: str=None,
+    energy_channels: Iterable=None,
 ) -> tuple:
     """Plot PSP and EPREM flux at interpolated radius and energies."""
     energies = psp.energy('means')
+    if energy_channels:
+        energies = energies[energy_channels]
     psp_start = psp.utc[0]
     event_offset, utc_offset = tools.get_time_offsets(
         psp_start, event_utc, utc_start
@@ -158,6 +168,12 @@ if __name__ == '__main__':
     p.add_argument(
         '--utc_start',
         help="UTC start (YYYY-mm-dd HH:MM:SS) of plot",
+    )
+    p.add_argument(
+        '--energy_channels',
+        help="the zero-based indices of energy channels to use",
+        type=int,
+        nargs='*',
     )
     p.add_argument(
         '--data_dir',
