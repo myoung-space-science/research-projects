@@ -234,6 +234,7 @@ class FluxDataset:
     ) -> None:
         self.filepath = full_path(filename)
         self.energy_unit = energy_unit
+        self.flux_unit = None
         self._contents = None
         self._header = None
         self._body = None
@@ -275,8 +276,12 @@ class FluxDataset:
                     'flux unit': flux_unit,
                 }
             )
+            reference = channels[0]['flux unit']
+            if any(channel['flux unit'] != reference for channel in channels):
+                raise ValueError("Inconsistent flux units.")
+            self.flux_unit = reference
         return {
-            'dataset': self.header[2],
+            'name': self.header[2],
             'datefmt': self.header[3].split()[-1],
             'timefmt': self.header[4].split()[-1],
             'channels': channels,
