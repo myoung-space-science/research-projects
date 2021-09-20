@@ -114,6 +114,35 @@ class Energy:
         """Use this object as a sequence index."""
         return self._index
 
+    def __add__(self, other: Union['Energy', float]):
+        """Add two instances."""
+        if isinstance(other, Energy):
+            if other._unit == self._unit:
+                return self._value + other._value
+            raise ValueError(self._bad_units('add', self._unit, other._unit))
+        if isinstance(other, int):
+            return self._index + other
+        return NotImplemented
+
+    def __sub__(self, other: Union['Energy', float]):
+        """Subtract two instances."""
+        if isinstance(other, Energy):
+            if other._unit == self._unit:
+                return self._value - other._value
+            raise ValueError(
+                self._bad_units('subract', self._unit, other._unit)
+            )
+        if isinstance(other, int):
+            return self._index - other
+        return NotImplemented
+
+    def _bad_units(self, op, u1, u2):
+        """Create an error """
+        return (
+            f"Cannot {op} instances with different units"
+            f" {u1} and {u2}"
+        )
+
     def __repr__(self) -> str:
         """An unambiguous representation of this object."""
         return f"{self.__class__.__qualname__}({self})"
