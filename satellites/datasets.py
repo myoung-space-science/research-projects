@@ -207,12 +207,13 @@ class Energies:
                 stop += 1  
             step = self.closest(index.step)
             converted = slice(start, stop, step)
-            return [
-                self._instance(self._values[i], i)
-                for i in self._indices[converted]
-            ]
+            return Energies(self._values[converted], self.unit)
         energy = self._values[index]
         return self._instance(energy, index)
+
+    def __iter__(self):
+        """Iterate over indices."""
+        return iter(self._indices)
 
     def _instance(self, value: Iterable[float], index: int) -> Energy:
         """Convenience method to create a single instance."""
@@ -234,6 +235,8 @@ class Energies:
           for a bin that contains `target` could yield a null result even if
           `target` is within the bounds of the instrument's full energy range.
         """
+        if isinstance(target, int):
+            return target
         if not isinstance(target, float):
             return
         values = np.array(self._values)
