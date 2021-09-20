@@ -1,6 +1,7 @@
 import datetime
 import dateutil.parser
 from pathlib import Path
+import operator
 import re
 from typing import *
 
@@ -8,9 +9,9 @@ import numpy as np
 import scipy.stats.mstats as ms
 
 
-class Time:
-    """A single time from the dataset. Usable as an index."""
-    def __init__(self, value: datetime.datetime, index: int) -> None:
+class DataIndex:
+    """An object that knows its own data value and array index."""
+    def __init__(self, value, index: int) -> None:
         self._value = value
         self._index = int(index)
 
@@ -18,20 +19,44 @@ class Time:
         """Use this object as a sequence index."""
         return self._index
 
-    def __add__(self, other: 'Time'):
-        """Add two instances."""
-        if isinstance(other, Time):
+    def _add(self, other: Union['DataIndex', int]):
+        """Implements a + b."""
+        if isinstance(other, DataIndex):
             return self._value + other._value
-        if isinstance(other, int):
-            return self._index + other
         return NotImplemented
 
-    def __sub__(self, other: 'Time'):
-        """Subtract two instances."""
-        if isinstance(other, Time):
+    def __add__(self, other: Union['DataIndex', int]):
+        """Add another instance or get an incremented index."""
+        if isinstance(other, int):
+            return self._index + other
+        return self._add(other)
+
+    def __radd__(self, other: 'DataIndex'):
+        """Suppress reflected addition of all other types."""
+        return self._add(other)
+
+    def __iadd__(self, other):
+        """Disable in-place addition."""
+        return NotImplemented
+
+    def _sub(self, other: Union['DataIndex', int]):
+        """Implements a - b."""
+        if isinstance(other, DataIndex):
             return self._value - other._value
+        return NotImplemented
+
+    def __sub__(self, other: Union['DataIndex', int]):
+        """Subtract another instance or get a decremented index."""
         if isinstance(other, int):
             return self._index - other
+        return self._sub(other)
+
+    def __rsub__(self, other: 'DataIndex'):
+        """Suppress reflected subtraction of all other types."""
+        return self._sub(other)
+
+    def __isub__(self, other):
+        """Disable in-place subtraction."""
         return NotImplemented
 
     def __repr__(self) -> str:
@@ -41,6 +66,9 @@ class Time:
     def __str__(self) -> str:
         """A simplified representation of this object."""
         return str(self._value)
+
+
+class Time(DataIndex): ...
 
 
 class Times:
@@ -109,53 +137,29 @@ class Times:
         return ', '.join(str(time) for time in self._values)
 
 
-class Energy:
-    """A single energy from the dataset. Usable as an index."""
-    def __init__(self, value: float, index: int, unit: str) -> None:
-        self._value = value
-        self._index = int(index)
+class Energy(DataIndex):
+    def __init__(self, value, index: int, unit: str) -> None:
+        super().__init__(value, index)
         self._unit = unit
 
-    def __index__(self) -> int:
-        """Use this object as a sequence index."""
-        return self._index
-
-    def __add__(self, other: Union['Energy', int]):
-        """Add two instances."""
+    def _op(self, other: Union['Energy', int], op: Callable, name: str=None):
         if isinstance(other, Energy):
             if other._unit == self._unit:
                 return self._value + other._value
-            raise ValueError(self._bad_units('add', self._unit, other._unit))
+            errmsg = (
+                f"Cannot {name or 'combine'} instances with different units"
+                f" '{self._unit}' and '{other._unit}'"
+            )
+            raise ValueError(errmsg)
         if isinstance(other, int):
             return self._index + other
         return NotImplemented
 
-    def __sub__(self, other: Union['Energy', int]):
-        """Subtract two instances."""
-        if isinstance(other, Energy):
-            if other._unit == self._unit:
-                return self._value - other._value
-            raise ValueError(
-                self._bad_units('subract', self._unit, other._unit)
-            )
-        if isinstance(other, int):
-            return self._index - other
-        return NotImplemented
+    def _add(self, other):
+        return self._op(other, operator.add, 'add')
 
-    def _bad_units(self, op, u1, u2):
-        """Create an error """
-        return (
-            f"Cannot {op} instances with different units"
-            f" {u1} and {u2}"
-        )
-
-    def __repr__(self) -> str:
-        """An unambiguous representation of this object."""
-        return f"{self.__class__.__qualname__}({self})"
-
-    def __str__(self) -> str:
-        """A simplified representation of this object."""
-        return f"{self._value} [{self._unit}]"
+    def _sub(self, other):
+        return self._op(other, operator.sub, 'subtract')
 
 
 class Energies:
