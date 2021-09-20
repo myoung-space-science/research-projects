@@ -120,7 +120,7 @@ class Energy:
         """Use this object as a sequence index."""
         return self._index
 
-    def __add__(self, other: Union['Energy', float]):
+    def __add__(self, other: Union['Energy', int]):
         """Add two instances."""
         if isinstance(other, Energy):
             if other._unit == self._unit:
@@ -130,7 +130,7 @@ class Energy:
             return self._index + other
         return NotImplemented
 
-    def __sub__(self, other: Union['Energy', float]):
+    def __sub__(self, other: Union['Energy', int]):
         """Subtract two instances."""
         if isinstance(other, Energy):
             if other._unit == self._unit:
