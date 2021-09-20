@@ -71,6 +71,31 @@ class DataIndex:
 class Time(DataIndex): ...
 
 
+class Energy(DataIndex):
+    def __init__(self, value, index: int, unit: str) -> None:
+        super().__init__(value, index)
+        self._unit = unit
+
+    def _op(self, other: Union['Energy', int], op: Callable, name: str=None):
+        if isinstance(other, Energy):
+            if other._unit == self._unit:
+                return self._value + other._value
+            errmsg = (
+                f"Cannot {name or 'combine'} instances with different units"
+                f" '{self._unit}' and '{other._unit}'"
+            )
+            raise ValueError(errmsg)
+        if isinstance(other, int):
+            return self._index + other
+        return NotImplemented
+
+    def _add(self, other):
+        return self._op(other, operator.add, 'add')
+
+    def _sub(self, other):
+        return self._op(other, operator.sub, 'subtract')
+
+
 class Times:
     """Times from the dataset."""
     def __init__(self, strings: Iterable[str]) -> None:
@@ -135,31 +160,6 @@ class Times:
     def __str__(self) -> str:
         """A simplified representation of this object."""
         return ', '.join(str(time) for time in self._values)
-
-
-class Energy(DataIndex):
-    def __init__(self, value, index: int, unit: str) -> None:
-        super().__init__(value, index)
-        self._unit = unit
-
-    def _op(self, other: Union['Energy', int], op: Callable, name: str=None):
-        if isinstance(other, Energy):
-            if other._unit == self._unit:
-                return self._value + other._value
-            errmsg = (
-                f"Cannot {name or 'combine'} instances with different units"
-                f" '{self._unit}' and '{other._unit}'"
-            )
-            raise ValueError(errmsg)
-        if isinstance(other, int):
-            return self._index + other
-        return NotImplemented
-
-    def _add(self, other):
-        return self._op(other, operator.add, 'add')
-
-    def _sub(self, other):
-        return self._op(other, operator.sub, 'subtract')
 
 
 class Energies:
