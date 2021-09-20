@@ -82,6 +82,8 @@ class Times:
 
     def closest(self, target: Union[str, datetime.datetime]) -> Optional[int]:
         """Find the available time closest to `target`."""
+        if isinstance(target, int):
+            return target
         if isinstance(target, datetime.datetime):
             return np.argmin(np.abs(np.array(self._values) - target))
         if isinstance(target, str):
