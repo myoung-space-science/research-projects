@@ -66,6 +66,8 @@ class Times:
         if isinstance(index, slice):
             start = self.closest(index.start)
             stop = self.closest(index.stop)
+            if stop is not None:
+                stop += 1  
             step = self.closest(index.step)
             converted = slice(start, stop, step)
             return [Time(self._values[i], i) for i in self._indices[converted]]
@@ -172,6 +174,8 @@ class Energies:
         if isinstance(index, slice):
             start = self.closest(index.start)
             stop = self.closest(index.stop)
+            if stop is not None:
+                stop += 1  
             step = self.closest(index.step)
             converted = slice(start, stop, step)
             return [
