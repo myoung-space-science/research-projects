@@ -174,12 +174,6 @@ class Energies:
             stop = self.closest(index.stop)
             step = self.closest(index.step)
             converted = slice(start, stop, step)
-            return [Time(self._values[i], i) for i in self._indices[converted]]
-        if isinstance(index, slice):
-            start = self.closest(index.start)
-            stop = self.closest(index.stop)
-            step = self.closest(index.step)
-            converted = slice(start, stop, step)
             return [
                 self._instance(self._values[i], i)
                 for i in self._indices[converted]
