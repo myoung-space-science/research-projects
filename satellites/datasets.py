@@ -160,11 +160,16 @@ class Energy:
 
 class Energies:
     """Energies from the dataset."""
-    def __init__(self, values: Iterable[float], unit: str) -> None:
+    def __init__(
+        self,
+        values: Iterable[float],
+        unit: str,
+        indices: Iterable[int]=None,
+    ) -> None:
         self._values = values
         self.unit = unit
         self._length = len(self._values)
-        self._indices = range(self._length)
+        self._indices = indices or range(self._length)
 
     def reduce(self, mode: str) -> 'Energies':
         """Create a new 1-D instance via the given mode.
