@@ -357,13 +357,7 @@ class FluxDataset:
             fluxes.append([float(v) for v in cols[2:]])
         return Times(datetimes), np.array(fluxes)
 
-    def fluence(
-        self,
-        start: str=None,
-        stop: str=None,
-        low: float=None,
-        high: float=None,
-    ) -> np.ndarray:
+    def fluence(self, start: str=None, stop: str=None) -> np.ndarray:
         """Compute the fluence over the given time range.
         
         This method computes fluence by summing fluxes over the indicated
@@ -393,19 +387,11 @@ class FluxDataset:
             function of energy.
         """
         t0 = self.times[start] if start else None
-        t1 = self.times[stop] if stop else None
-        e0 = self.energies[low] if low else None
-        e1 = self.energies[high] if high else None
+        t1 = self.times[stop]+1 if stop else None
         cadence = (self.times[1] - self.times[0]).seconds
-        return np.nansum(self.fluxes[t0:t1, e0:e1], axis=0) * cadence
+        return np.nansum(self.fluxes[t0:t1, :], axis=0) * cadence
 
-    def average_flux(
-        self,
-        start: str=None,
-        stop: str=None,
-        low: float=None,
-        high: float=None,
-    ) -> np.ndarray:
+    def average_flux(self, start: str=None, stop: str=None) -> np.ndarray:
         """Compute the average flux over the given time range.
         
         This method computes average flux by first computing the fluence over
@@ -419,7 +405,7 @@ class FluxDataset:
             function of energy.
         """
         timespan = (self.times[stop or -1] - self.times[start or 0]).seconds
-        return self.fluence(start, stop, low, high) / timespan
+        return self.fluence(start, stop) / timespan
 
     @property
     def header(self):
