@@ -189,15 +189,23 @@ class Energies:
 
     def closest(self, target: float) -> Optional[int]:
         """Find the index of the energy bin containing or closest to `target`.
-        
-        This method searches for the bin whose low-energy bound is less than or
-        equal to the target. The motivation for this criterion is that some
-        instruments may have non-overlapping bins, so that strictly searching
-        for a bin that contains `target` could yield a null result even if
-        `target` is within the bounds of the instrument's full energy range.
+
+        The behavior of this method depends on the shape of the internal values:
+        - If the energy values are stored in a 1-D array (perhaps because the
+          user created this instance via `Energies.reduce`) this method searches
+          for the minimum of ``|values - target|``.
+        - If the energy values are stored in a 2-D array of bin bounds, this
+          method searches for the bin whose low-energy bound is less than or
+          equal to the target. The motivation for this criterion is that some
+          instruments may have non-overlapping bins, so that strictly searching
+          for a bin that contains `target` could yield a null result even if
+          `target` is within the bounds of the instrument's full energy range.
         """
         if not isinstance(target, float):
             return
+        values = np.array(self._values)
+        if values.ndim == 1:
+            return np.argmin(np.abs(values - target))
         bottoms = [min(pair) for pair in self._values]
         if target < np.min(bottoms):
             return 0
