@@ -382,12 +382,6 @@ class FluxDataset:
         stop : string
             The date and time of the final record to include in the sum. The
             default value is the final record in the dataset.
-        low : float
-            The lowest energy to include in the result. The default value is the
-            lowest energy in the dataset.
-        high : float
-            The highest energy to include in the result. The default value is
-            highest energy in the dataset.
 
         Returns
         -------
