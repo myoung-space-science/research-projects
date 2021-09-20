@@ -18,16 +18,20 @@ class Time:
         """Use this object as a sequence index."""
         return self._index
 
-    def __add__(self, other: 'Time') -> datetime.timedelta:
+    def __add__(self, other: 'Time'):
         """Add two instances."""
         if isinstance(other, Time):
             return self._value + other._value
+        if isinstance(other, int):
+            return self._index + other
         return NotImplemented
 
-    def __sub__(self, other: 'Time') -> datetime.timedelta:
+    def __sub__(self, other: 'Time'):
         """Subtract two instances."""
         if isinstance(other, Time):
             return self._value - other._value
+        if isinstance(other, int):
+            return self._index - other
         return NotImplemented
 
     def __repr__(self) -> str:
