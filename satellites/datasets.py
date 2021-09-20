@@ -320,7 +320,34 @@ class FluxDataset:
         low: float=None,
         high: float=None,
     ) -> np.ndarray:
-        """Compute the fluence over the given time range."""
+        """Compute the fluence over the given time range.
+        
+        This method computes fluence by summing fluxes over the indicated
+        timespan (by default, the full dataset) and multiplying by the
+        observation cadence. This is equivalent to a left Riemann sum with
+        constant step size.
+
+        Parameters
+        ----------
+        start : string
+            The date and time of the first record to include in the sum. The
+            default value is the first record in the dataset.
+        stop : string
+            The date and time of the final record to include in the sum. The
+            default value is the final record in the dataset.
+        low : float
+            The lowest energy to include in the result. The default value is the
+            lowest energy in the dataset.
+        high : float
+            The highest energy to include in the result. The default value is
+            highest energy in the dataset.
+
+        Returns
+        -------
+        ndarray
+            A 1-D array of fluences computed over the indicated timespan, as a
+            function of energy.
+        """
         t0 = self.times[start] if start else None
         t1 = self.times[stop] if stop else None
         e0 = self.energies[low] if low else None
@@ -335,7 +362,18 @@ class FluxDataset:
         low: float=None,
         high: float=None,
     ) -> np.ndarray:
-        """Compute the average flux over the given time range."""
+        """Compute the average flux over the given time range.
+        
+        This method computes average flux by first computing the fluence over
+        the appropriate timespan, then dividing my the timespan in seconds. See
+        `FluxDataset.fluence` for information about parameters.
+
+        Returns
+        -------
+        ndarray
+            A 1-D array of fluxes averaged over the indicated timespan, as a
+            function of energy.
+        """
         timespan = (self.times[stop or -1] - self.times[start or 0]).seconds
         return self.fluence(start, stop, low, high) / timespan
 
