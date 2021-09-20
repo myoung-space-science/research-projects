@@ -202,6 +202,10 @@ class Energies:
         """The length of this object."""
         return self._length
 
+    def __iter__(self):
+        """Iterate over indices."""
+        return iter(self._indices)
+
     def __array__(self, *args, **kwargs) -> np.ndarray:
         """Convert to a NumPy array."""
         return np.array(self._values, *args, **kwargs)
@@ -218,13 +222,13 @@ class Energies:
                 stop += 1  
             step = self.closest(index.step)
             converted = slice(start, stop, step)
-            return Energies(self._values[converted], self.unit)
+            return Energies(
+                self._values[converted],
+                self.unit,
+                indices=self._indices[converted],
+            )
         energy = self._values[index]
         return self._instance(energy, index)
-
-    def __iter__(self):
-        """Iterate over indices."""
-        return iter(self._indices)
 
     def _instance(self, value: Iterable[float], index: int) -> Energy:
         """Convenience method to create a single instance."""
