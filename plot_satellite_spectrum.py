@@ -42,7 +42,7 @@ def main(
         high=high,
     )
     fit = seed.Fitter(
-        np.array(energies),
+        energies,
         spectrum,
         free=free,
         fixed=fixed,
@@ -91,7 +91,7 @@ def get_arrays(
     method = methods[mode]
     spectrum = np.array(method(start=start, stop=stop))
     energies = dataset.energies.reduce('arithmetic mean')[low:high]
-    return energies, spectrum[list(energies)]
+    return np.array(energies), spectrum[list(energies)]
 
 
 def create_plotpath(datapath: Path, mode: str, plotfile: str=None):
