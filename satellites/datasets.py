@@ -327,7 +327,7 @@ class FluxDataset:
                 egrp = sub[:match.start()].strip().split()
                 energy_unit = egrp[1]
                 energy_bin = egrp[0]
-                flux_unit = sub[match.start():match.end()].strip()
+                flux_unit = sub[match.start():match.end()].strip(' []')
             else:
                 energy_bin = energy_unit = flux_unit = None
             channels.append(
