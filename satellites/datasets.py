@@ -1,3 +1,4 @@
+import abc
 import datetime
 import dateutil.parser
 from pathlib import Path
@@ -96,21 +97,52 @@ class Energy(DataIndex):
         return self._op(other, operator.sub, 'subtract')
 
 
-class Times:
-    """Times from the dataset."""
-    def __init__(self, strings: Iterable[str]) -> None:
-        self._strings = strings
-        self._values = [Times.str2datetime(s) for s in strings]
+class IndexArray(abc.ABC):
+    """Interface between dataset arrays and index objects."""
+    def __init__(
+        self,
+        values: Iterable[float],
+        indices: Iterable[int]=None,
+    ) -> None:
+        self._values = values
         self._length = len(self._values)
-        self._indices = range(self._length)
+        self._indices = indices or range(self._length)
 
     def __len__(self) -> int:
         """The length of this object."""
         return self._length
 
+    def __iter__(self):
+        """Iterate over indices."""
+        return iter(self._indices)
+
     def __array__(self, *args, **kwargs) -> np.ndarray:
         """Convert to a NumPy array."""
         return np.array(self._values, *args, **kwargs)
+
+    @abc.abstractmethod
+    def __getitem__(self, index):
+        """Access one or more elements via index methods."""
+        return self._values[index]
+
+    def __repr__(self) -> str:
+        """An unambiguous representation of this object."""
+        return f"{self.__class__.__qualname__}({self})"
+
+    def __str__(self) -> str:
+        """A simplified representation of this object."""
+        return ', '.join(str(time) for time in self._values)
+
+
+class Times(IndexArray):
+    """Times from the dataset."""
+    def __init__(
+        self,
+        strings: Iterable[str],
+        indices: Iterable[int]=None,
+    ) -> None:
+        values = [Times.str2datetime(s) for s in strings]
+        super().__init__(values, indices=indices)
 
     def __getitem__(self, index) -> Union[Time, List[Time]]:
         """Access times via index notation."""
@@ -127,7 +159,10 @@ class Times:
                 stop += 1  
             step = self.closest(index.step)
             converted = slice(start, stop, step)
-            return [Time(self._values[i], i) for i in self._indices[converted]]
+            return Times(
+                self._values[converted],
+                indices=self._indices[converted],
+            )
         if isinstance(index, int) and index < 0:
             index += self._length
         time = self._values[index]
@@ -153,16 +188,8 @@ class Times:
         """Compute the time span between `start` and `stop`."""
         return Times.str2datetime(stop) - Times.str2datetime(start)
 
-    def __repr__(self) -> str:
-        """An unambiguous representation of this object."""
-        return f"{self.__class__.__qualname__}({self})"
 
-    def __str__(self) -> str:
-        """A simplified representation of this object."""
-        return ', '.join(str(time) for time in self._values)
-
-
-class Energies:
+class Energies(IndexArray):
     """Energies from the dataset."""
     def __init__(
         self,
@@ -170,10 +197,8 @@ class Energies:
         unit: str,
         indices: Iterable[int]=None,
     ) -> None:
-        self._values = values
+        super().__init__(values, indices=indices)
         self.unit = unit
-        self._length = len(self._values)
-        self._indices = indices or range(self._length)
 
     def reduce(self, mode: str) -> 'Energies':
         """Create a new 1-D instance via the given mode.
@@ -201,18 +226,6 @@ class Energies:
             values = [ms.hmean(value) for value in self._values]
             return Energies(values, self.unit)
         raise ValueError(f"Unknown reduction mode: '{mode}'")
-
-    def __len__(self) -> int:
-        """The length of this object."""
-        return self._length
-
-    def __iter__(self):
-        """Iterate over indices."""
-        return iter(self._indices)
-
-    def __array__(self, *args, **kwargs) -> np.ndarray:
-        """Convert to a NumPy array."""
-        return np.array(self._values, *args, **kwargs)
 
     def __getitem__(self, index) -> Union[Energy, List[Energy]]:
         """Access energies via index notation."""
@@ -269,14 +282,6 @@ class Energies:
         for index, (lo, hi) in enumerate(zip(bottoms[:-1], bottoms[1:])):
             if lo <= target < hi:
                 return index
-
-    def __repr__(self) -> str:
-        """An unambiguous representation of this object."""
-        return f"{self.__class__.__qualname__}({self})"
-
-    def __str__(self) -> str:
-        """A simplified representation of this object."""
-        return ', '.join(str(time) for time in self._values)
 
 
 class FluxDataset:
