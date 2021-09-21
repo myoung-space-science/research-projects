@@ -224,7 +224,7 @@ class CurveFitRunner(_FitRunner):
         return_error_message: bool=False,
         silent: bool=False,
         **fit_kw,
-    ) -> Union[str, None]:
+    ) -> Optional[str]:
         """Fit the given function to the given data."""
         try:
             popt, pcov = curve_fit(
