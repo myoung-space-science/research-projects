@@ -41,18 +41,7 @@ def main(
         low=low,
         high=high,
     )
-    fit = seed.Fitter(
-        energies,
-        spectrum,
-        free=free,
-        fixed=fixed,
-        lower=lower,
-        initial=initial,
-        upper=upper,
-    )
     plt.plot(energies, spectrum, 'k.')
-    plt.plot(fit.energies, fit.fluxdata, label="data")
-    plt.plot(fit.energies, fit.spectrum, label="fit")
     if xlim:
         plt.xlim(xlim)
     if ylim:
@@ -63,9 +52,16 @@ def main(
     plt.ylabel(f"Flux [{dataset.flux_unit}]")
     title = dataset.metadata['name']
     plt.title(title, wrap=True)
-    original_legend = plt.legend(loc='upper right')
-    plt.gca().add_artist(parameter_legend(fit))
-    plt.gca().add_artist(original_legend)
+    if free:
+        plot_fit(
+            energies,
+            spectrum,
+            free=free,
+            fixed=fixed,
+            lower=lower,
+            initial=initial,
+            upper=upper,
+        )
     plt.figure(num=1, figsize=(12, 12))
     plotpath = create_plotpath(datapath, mode, plotfile)
     if verbose:
@@ -92,6 +88,20 @@ def get_arrays(
     spectrum = np.array(method(start=start, stop=stop))
     energies = dataset.energies.reduce('arithmetic mean')[low:high]
     return np.array(energies), spectrum[list(energies)]
+
+
+def plot_fit(
+    energies: np.ndarray,
+    spectrum: np.ndarray,
+    **context
+) -> None:
+    """Compute and plot a fit to the spectrum."""
+    fit = seed.Fitter(energies, spectrum, **context)
+    plt.plot(fit.energies, fit.fluxdata, label="data")
+    plt.plot(fit.energies, fit.spectrum, label="fit")
+    original_legend = plt.legend(loc='upper right')
+    plt.gca().add_artist(parameter_legend(fit))
+    plt.gca().add_artist(original_legend)
 
 
 def create_plotpath(datapath: Path, mode: str, plotfile: str=None):
