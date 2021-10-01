@@ -33,7 +33,7 @@ def main(
     if verbose:
         print(f"Reading {datapath}")
     dataset = datasets.FluxDataset(datapath)
-    energies, spectrum = get_arrays(
+    energies, spectrum, uncertainty = get_arrays(
         dataset,
         mode,
         start=start,
@@ -53,9 +53,12 @@ def main(
     title = dataset.metadata['name']
     plt.title(title, wrap=True)
     if free:
+        if uncertainty.size == 0:
+            uncertainty = None
         plot_fit(
             energies,
             spectrum,
+            sigma=uncertainty,
             free=free,
             fixed=fixed,
             lower=lower,
@@ -85,9 +88,16 @@ def get_arrays(
     if mode.lower() not in methods:
         raise ValueError(f"Unknown mode '{mode}'")
     method = methods[mode]
-    spectrum = np.array(method(start=start, stop=stop))
+    result = method(start=start, stop=stop)
+    if len(result) == 1:
+        spectrum = np.array(result)
+    elif len(result) == 2:
+        spectrum, uncertainty = [np.array(r) for r in result]
     energies = dataset.energies.reduce('arithmetic mean')[low:high]
-    return np.array(energies), spectrum[list(energies)]
+    spectrum = spectrum[list(energies)]
+    if uncertainty.size > 0:
+        uncertainty = uncertainty[list(energies)]
+    return (np.array(energies), spectrum, uncertainty)
 
 
 def plot_fit(
