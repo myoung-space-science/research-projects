@@ -303,9 +303,11 @@ class FluxDataset:
         self._newline = newline
         self._comment = comment
         self._fill = fill
+        self._ncols = None
+        self._nchannels = None
         self.metadata = self._get_metadata()
         self.energies = self._get_energies()
-        self.times, self.fluxes = self._parse_data()
+        self.times, self.fluxes, self.uncertainties = self._parse_data()
 
     def strip_extra(self, line: str) -> str:
         """Strip comment characters, filler text, etc."""
@@ -314,39 +316,44 @@ class FluxDataset:
 
     def _get_metadata(self) -> Dict[str, str]:
         """Read and store file metadata."""
-        datacols = [
+        datalines = [
             line for line in self.header if 'channel' in line.lower()
         ]
-        channels = []
-        for datacol in datacols:
-            parts = datacol.split(':')
-            name = parts[1]
-            sub = parts[2]
-            match = re.search(r"\[([\w\* \(\)\/]+)\]", sub)
-            if match:
-                egrp = sub[:match.start()].strip().split()
-                energy_unit = egrp[1]
-                energy_bin = egrp[0]
-                flux_unit = sub[match.start():match.end()].strip(' []')
-            else:
-                energy_bin = energy_unit = flux_unit = None
-            channels.append(
-                {
-                    'name': name,
-                    'energy bin': energy_bin,
-                    'energy unit': energy_unit,
-                    'flux unit': flux_unit,
-                }
-            )
-            reference = channels[0]['flux unit']
-            if any(channel['flux unit'] != reference for channel in channels):
-                raise ValueError("Inconsistent flux units.")
-            self.flux_unit = reference
+        self._ncols = 2 + len(datalines) # date col + time col + data cols
+        fluxlines = [
+            line for line in datalines if 'uncertainty' not in line.lower()
+        ]
+        self._nchannels = len(fluxlines)
+        channels = [self._read_channel(fluxline) for fluxline in fluxlines]
+        reference = channels[0]['flux unit']
+        if any(channel['flux unit'] != reference for channel in channels):
+            raise ValueError("Inconsistent flux units.")
+        self.flux_unit = reference
         return {
             'name': self.header[2],
             'datefmt': self.header[3].split()[-1],
             'timefmt': self.header[4].split()[-1],
             'channels': channels,
+        }
+
+    def _read_channel(self, line: str):
+        """Read the metadata for a single energy channel."""
+        parts = line.split(':')
+        name = parts[1]
+        sub = parts[2]
+        match = re.search(r"\[([\w\* \(\)\/]+)\]", sub)
+        if match:
+            egrp = sub[:match.start()].strip().split()
+            energy_unit = egrp[1]
+            energy_bin = egrp[0]
+            flux_unit = sub[match.start():match.end()].strip(' []')
+        else:
+            energy_bin = energy_unit = flux_unit = None
+        return {
+            'name': name,
+            'energy bin': energy_bin,
+            'energy unit': energy_unit,
+            'flux unit': flux_unit,
         }
 
     def _get_energies(self):
@@ -365,15 +372,22 @@ class FluxDataset:
             energies.append([f * float(energy) for energy in ebin.split(dash)])
         return Energies(energies, self.energy_unit)
 
-    def _parse_data(self):
+    def _parse_data(self) -> Tuple[Times, np.ndarray, np.ndarray]:
         """Parse the file data into datetimes and fluxes."""
         datetimes = []
         fluxes = []
+        uncertainties = []
+        i0 = 2
+        i1 = i0 + self.nchannels
         for line in self.body:
             cols = line.split()
             datetimes.append(f"{cols[0]} {cols[1]}")
-            fluxes.append([float(v) for v in cols[2:]])
-        return Times(datetimes), np.array(fluxes)
+            flux = [float(v) for v in cols[i0:i1]]
+            fluxes.append(flux)
+            uncertainties.append(
+                [float(u) * v for u, v in zip(cols[i1:], flux)]
+            )
+        return Times(datetimes), np.array(fluxes), np.array(uncertainties)
 
     def fluence(self, start: str=None, stop: str=None) -> np.ndarray:
         """Compute the fluence over the given time range.
@@ -401,7 +415,13 @@ class FluxDataset:
         t0 = self.times[start] if start else None
         t1 = self.times[stop]+1 if stop else None
         cadence = (self.times[1] - self.times[0]).seconds
-        return np.nansum(self.fluxes[t0:t1, :], axis=0) * cadence
+        fluence = np.nansum(self.fluxes[t0:t1, :], axis=0) * cadence
+        uncertainty = np.array([
+            np.sqrt(
+                np.nansum([df_i ** 2 for df_i in df])
+            ) for df in self.uncertainties[t0:t1, :].transpose()
+        ])
+        return fluence, uncertainty
 
     def average_flux(self, start: str=None, stop: str=None) -> np.ndarray:
         """Compute the average flux over the given time range.
@@ -416,8 +436,11 @@ class FluxDataset:
             A 1-D array of fluxes averaged over the indicated timespan, as a
             function of energy.
         """
-        timespan = (self.times[stop or -1] - self.times[start or 0]).seconds
-        return self.fluence(start, stop) / timespan
+        timespan = (
+            self.times[stop or -1] - self.times[start or 0]
+        ).total_seconds()
+        fluence, uncertainty = self.fluence(start, stop)
+        return fluence / timespan, uncertainty / timespan
 
     @property
     def header(self):
@@ -451,6 +474,20 @@ class FluxDataset:
         """Read the full file contents."""
         with self.filepath.open('r') as fp:
             return fp.readlines()
+
+    @property
+    def ncols(self) -> int:
+        """The number of columns in the file body."""
+        if self._ncols is None:
+            self._ncols = 0
+        return self._ncols
+
+    @property
+    def nchannels(self) -> int:
+        """The number of flux channels in this dataset."""
+        if self._nchannels is None:
+            self._nchannels = 0
+        return self._nchannels
 
 
 def full_path(filename: str) -> Path:
