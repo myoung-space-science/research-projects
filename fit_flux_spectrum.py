@@ -330,6 +330,7 @@ def parse_cli(parser: argparse.ArgumentParser):
 if __name__ == "__main__":
     p = argparse.ArgumentParser(
         description=main.__doc__,
+        allow_abbrev=False,
         formatter_class=argparse.RawTextHelpFormatter,
     )
     p.add_argument(
