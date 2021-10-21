@@ -182,26 +182,26 @@ def parameter_legend(fit: seed.Fitter) -> Legend:
 def finalize_plot(opts: dict=None):
     """Perform final plot updates and save the plot to disk."""
     verbose = opts['verbose'] if opts and 'verbose' in opts else False
-    path = create_plotpath(opts)
+    path = create_destpath('plotdest', 'png', opts)
     plt.figure(num=1, figsize=(12, 12))
     if verbose:
         print(f"Saving {path}")
     plt.savefig(tools.full_path(path))
 
 
-def create_plotpath(opts: dict=None):
-    """Create an appropriate full path based on input."""
+def create_destpath(optkey: str, ext: str, opts: dict=None):
+    """Create an appropriate destination path based on input."""
     kws = opts or {}
     datafile = kws.get('datafile')
     datapath = tools.full_path(datafile)
-    plotname = f"{datapath.stem}-fit.png"
-    plotdest = kws.get('plotdest')
-    if plotdest is None:
-        plotdest = datapath.parent / plotname
-    plotpath = tools.full_path(plotdest)
-    if plotpath.is_dir():
-        return plotpath / plotname
-    return plotpath
+    destname = f"{datapath.stem}-fit.{ext.lstrip('.')}"
+    userdest = kws.get(optkey)
+    if userdest is None:
+        userdest = datapath.parent / destname
+    destpath = tools.full_path(userdest)
+    if destpath.is_dir():
+        return destpath / destname
+    return destpath
 
 
 def get_source(opts: dict):
