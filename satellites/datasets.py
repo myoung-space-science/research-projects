@@ -284,6 +284,10 @@ class Energies(IndexArray):
                 return index
 
 
+class DatasetIOError(IOError):
+    """An error occurred during dataset I/O."""
+
+
 class FluxDataset:
     """A class that manages flux data stored in an ASCII file."""
     def __init__(
@@ -305,9 +309,28 @@ class FluxDataset:
         self._fill = fill
         self._ncols = None
         self._nchannels = None
-        self.metadata = self._get_metadata()
-        self.energies = self._get_energies()
-        self.times, self.fluxes, self.uncertainties = self._parse_data()
+        try:
+            self.metadata = self._get_metadata()
+        except Exception:
+            self._raise_io_error("Error while reading metadata")
+        try:
+            self.energies = self._get_energies()
+        except Exception:
+            self._raise_io_error("Error while reading energies")
+        try:
+            self.times, self.fluxes, self.uncertainties = self._parse_data()
+        except Exception:
+            self._raise_io_error("Error while reading times and fluxes")
+
+    def _raise_io_error(self, basemsg: str=None):
+        """Raise an I/O-related error.
+
+        This method will raise `DatasetIOError` with the full file path,
+        preceeded by additional text, if provided.
+        """
+        body = "" if not basemsg else f"{basemsg} for "
+        message = f"{body}{self.filepath}"
+        raise DatasetIOError(message) from None
 
     def strip_extra(self, line: str) -> str:
         """Strip comment characters, filler text, etc."""
