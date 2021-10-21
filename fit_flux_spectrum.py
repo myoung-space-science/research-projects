@@ -229,6 +229,7 @@ def create_destpath(optkey: str, ext: str, opts: dict=None):
     userdest = kws.get(optkey)
     if userdest is None:
         directory = tools.full_path(kws.get('outdir', datapath.parent))
+        directory.mkdir(parents=True, exist_ok=True)
         userdest = directory / destname
     destpath = tools.full_path(userdest)
     if destpath.is_dir():
