@@ -146,6 +146,12 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(
         description=main.__doc__,
         formatter_class=argparse.RawTextHelpFormatter,
+        epilog=(
+            "DEPRECATION WARNING"
+            ": Future updates may remove this script. Please use "
+            "fit_flux_spectrum.py, which is capable of handling a wider "
+            "variety of inputs."
+        )
     )
     p.add_argument(
         'datafile',
