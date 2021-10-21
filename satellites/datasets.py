@@ -513,6 +513,6 @@ class FluxDataset:
         return self._nchannels
 
 
-def full_path(filename: str) -> Path:
+def full_path(filename: Union[str, Path]) -> Path:
     """Expand and resolve `filename`."""
     return Path(filename).expanduser().resolve()
