@@ -71,7 +71,8 @@ def load_from_dataset(
 
 def get_arrays(source, **load_kw) -> Tuple[np.ndarray]:
     """Extract energies, spectrum, and uncertainties from `source`."""
-    data = get_data_by_type(source, **load_kw)
+    loader = DataLoader(source)
+    data = loader(**load_kw)
     energies=data['energies']
     spectrum=data['spectrum']
     uncertainties=data.get('uncertainties')
@@ -81,24 +82,42 @@ def get_arrays(source, **load_kw) -> Tuple[np.ndarray]:
     return arrays
 
 
-loaders = {
-    (Path,): load_from_file,
-    (dict,): load_from_dict,
-    (datasets.FluxDataset,): load_from_dataset,
-}
+class DataLoader:
+    """A format-agnostic data-loading object."""
 
+    _loaders = {
+        (Path,): load_from_file,
+        (dict,): load_from_dict,
+        (datasets.FluxDataset,): load_from_dataset,
+    }
 
-def get_data_by_type(source, **user_kw) -> Mapping[str, Any]:
-    """Load a data mapping via the appropriate funciton, if possible."""
-    for types, loader in loaders.items():
-        if isinstance(source, types):
-            known = inspect.signature(loader).parameters
-            kwargs = {
-                k: user_kw.get(k) for k, v in known.items()
-                if v.default is not inspect.Parameter.empty
-            }
-            return loader(source, **kwargs)
-    raise TypeError(source) from None
+    def __init__(self, source) -> None:
+        self.source = source
+        self._loader = None
+
+    @property
+    def loader(self) -> Callable[..., np.ndarray]:
+        """The appropriate data loader for this dataset."""
+        if self._loader is None:
+            for types, loader in self._loaders.items():
+                if isinstance(self.source, types):
+                    self._loader = loader
+        return self._loader
+
+    def __call__(self, **kwargs) -> Mapping[str, Any]:
+        """Load the data and return a mapping to dataset members."""
+        if self.loader:
+            valid = self._parse(kwargs)
+            return self.loader(self.source, **valid)
+        raise TypeError(self.source) from None
+
+    def _parse(self, kwargs: dict):
+        """Extract known keyword arguments from user options."""
+        known = inspect.signature(self.loader).parameters
+        return {
+            k: kwargs.get(k) for k, v in known.items()
+            if v.default is not inspect.Parameter.empty
+        }
 
 
 def plot_spectrum(energies: np.ndarray, spectrum: np.ndarray, **plot_kw):
