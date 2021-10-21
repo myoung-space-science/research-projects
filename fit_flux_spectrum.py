@@ -228,7 +228,8 @@ def create_destpath(optkey: str, ext: str, opts: dict=None):
     destname = f"{datapath.stem}-fit.{ext.lstrip('.')}"
     userdest = kws.get(optkey)
     if userdest is None:
-        userdest = datapath.parent / destname
+        directory = tools.full_path(kws.get('outdir', datapath.parent))
+        userdest = directory / destname
     destpath = tools.full_path(userdest)
     if destpath.is_dir():
         return destpath / destname
@@ -333,6 +334,15 @@ if __name__ == "__main__":
     p.add_argument(
         'datafile',
         help="The path to the file to read. May be relative.",
+    )
+    p.add_argument(
+        '-o',
+        '--outdir',
+        help=(
+            "The directory in which to save output. May be relative."
+            "\nSetting PLOTDEST or TEXTDEST overrides this parameter"
+            " for the plot and text outputs, respectively."
+        )
     )
     p.add_argument(
         '--plotdest',
