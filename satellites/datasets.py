@@ -236,9 +236,12 @@ class Energies(IndexArray):
             start = self.closest(index.start)
             stop = self.closest(index.stop)
             if stop is not None:
-                stop += 1  
-            step = self.closest(index.step)
-            converted = slice(start, stop, step)
+                stop += 1
+            if index.step:
+                strcls = f"{self.__class__.__qualname__}"
+                message = f"{strcls} does not support slice steps"
+                raise TypeError(message) from None
+            converted = slice(start, stop)
             return Energies(
                 self._values[converted],
                 self.unit,
