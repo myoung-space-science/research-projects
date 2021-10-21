@@ -332,6 +332,7 @@ if __name__ == "__main__":
         description=main.__doc__,
         allow_abbrev=False,
         formatter_class=argparse.RawTextHelpFormatter,
+        parents=[tools.plot_parser],
     )
     p.add_argument(
         'datafile',
@@ -343,7 +344,7 @@ if __name__ == "__main__":
         help=(
             "The directory in which to save output. May be relative."
             "\nSetting PLOTDEST or TEXTDEST overrides this parameter"
-            " for the plot and text outputs, respectively."
+            "\n for the plot and text outputs, respectively."
         )
     )
     p.add_argument(
@@ -354,7 +355,7 @@ if __name__ == "__main__":
             "\nIf a directory, this routine will create a name from DATAFILE."
             "\nIf a name, this routine will save the plot in the"
             " same directory as DATAFILE."
-            "Paths and directories may be relative."
+            "\nPaths and directories may be relative."
         ),
     )
     p.add_argument(
@@ -365,7 +366,7 @@ if __name__ == "__main__":
             "\nIf a directory, this routine will create a name from DATAFILE."
             "\nIf a name, this routine will save the text in the"
             " same directory as DATAFILE."
-            "Paths and directories may be relative."
+            "\nPaths and directories may be relative."
         ),
     )
     p.add_argument(

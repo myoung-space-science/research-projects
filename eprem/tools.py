@@ -548,6 +548,39 @@ class StoreKeyValuePair(argparse.Action):
         setattr(namespace, self.dest, values,)
 
 
+plot_parser = argparse.ArgumentParser(
+    allow_abbrev=False,
+    formatter_class=argparse.RawTextHelpFormatter,
+    add_help=False,
+)
+plot_parser.add_argument(
+    '--xlim',
+    help="The x-axis limits",
+    nargs=2,
+    type=float,
+    metavar=('LO', 'HI'),
+)
+plot_parser.add_argument(
+    '--ylim',
+    help="The y-axis limits",
+    nargs=2,
+    type=float,
+    metavar=('LO', 'HI'),
+)
+plot_parser.add_argument(
+    '--xlabel',
+    help="The x-axis label",
+)
+plot_parser.add_argument(
+    '--ylabel',
+    help="The y-axis label",
+)
+plot_parser.add_argument(
+    '--title',
+    help="The plot title",
+)
+
+
 def full_path(filename: Union[str, Path]) -> Path:
     """Expand and resolve `filename`."""
     return Path(filename).expanduser().resolve()
