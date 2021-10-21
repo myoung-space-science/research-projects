@@ -507,7 +507,7 @@ def get_time_offsets(
 
 
 def split_key_value_pairs(
-    pairs: Iterable,
+    pairs: Iterable[str],
     totype: type=None,
 ) -> dict:
     """Split ``'key=value'`` strings into ``{key: value}`` pairs."""
