@@ -547,3 +547,7 @@ class StoreKeyValuePair(argparse.Action):
         values = split_key_value_pairs(values, totype=_type)
         setattr(namespace, self.dest, values,)
 
+
+def full_path(filename: Union[str, Path]) -> Path:
+    """Expand and resolve `filename`."""
+    return Path(filename).expanduser().resolve()

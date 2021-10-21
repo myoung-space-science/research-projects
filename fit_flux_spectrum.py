@@ -167,19 +167,19 @@ def finalize_plot(opts: dict=None):
     plt.figure(num=1, figsize=(12, 12))
     if verbose:
         print(f"Saving {path}")
-    plt.savefig(datasets.full_path(path))
+    plt.savefig(tools.full_path(path))
 
 
 def create_plotpath(opts: dict=None):
     """Create an appropriate full path based on input."""
     kws = opts or {}
     datafile = kws.get('datafile')
-    datapath = datasets.full_path(datafile)
+    datapath = tools.full_path(datafile)
     plotname = f"{datapath.stem}-fit.png"
     plotdest = kws.get('plotdest')
     if plotdest is None:
         plotdest = datapath.parent / plotname
-    plotpath = datasets.full_path(plotdest)
+    plotpath = tools.full_path(plotdest)
     if plotpath.is_dir():
         return plotpath / plotname
     return plotpath
@@ -190,7 +190,7 @@ def get_source(opts: dict):
     if not (datafile := opts.get('datafile')):
         raise TypeError("Cannot determine data source.")
     verbose = opts.get('verbose', False)
-    datapath = datasets.full_path(datafile)
+    datapath = tools.full_path(datafile)
     if verbose:
         print(f"Reading data from {datapath}")
     try:
