@@ -1,4 +1,5 @@
 import argparse
+import csv
 import inspect
 from pathlib import Path
 from typing import *
@@ -154,6 +155,36 @@ def compute_fit(
     )
 
 
+def write_fit(fit: seed.Fitter, opts: dict=None):
+    """Write fit results to a text file."""
+    path = create_destpath('textdest', 'txt', opts)
+    verbose = opts['verbose'] if opts and 'verbose' in opts else False
+    if verbose:
+        print(f"Saving {path}")
+    with path.open('w', newline='') as fp:
+        writer = csv.writer(fp, delimiter=',')
+        writer.writerows(csv_header(fit))
+        writer.writerow(['Energy (MeV)', 'Data', 'Fit'])
+        for row in zip(fit.energies, fit.fluxdata, fit.spectrum.squeeze()):
+            writer.writerow(row)
+
+
+def csv_header(fit: seed.Fitter, comment: str="#") -> list:
+    """Build an appropriate header for the text output."""
+
+    def line(name: str, parameter: dict) -> list:
+        """Build an individual header line."""
+        return [
+            f"{comment} {name} = {parameter['value']} = {parameter['status']}"
+        ]
+
+    parameters = fit.get_parameter_labels()
+    start = [f"{comment} Parameters:"]
+    info = [line(*item) for item in parameters.items()]
+    end = [f"{comment} "]
+    return [start, *info, end]
+
+
 def plot_fit(fit: seed.Fitter) -> None:
     """Compute and plot a fit to the spectrum."""
     plt.plot(fit.energies, fit.fluxdata, label="data")
@@ -266,6 +297,7 @@ def main(theory: dict=None, **opts):
     fit_kw = parse_opts(opts, valid_fit_kw)
     if 'free' in fit_kw:
         fit = compute_fit(energies, spectrum, uncertainties, **fit_kw)
+        write_fit(fit, opts)
         plot_fit(fit)
     finalize_plot(opts)
 
@@ -303,13 +335,23 @@ if __name__ == "__main__":
         help="The path to the file to read. May be relative.",
     )
     p.add_argument(
-        '-o',
-        dest='plotdest',
+        '--plotdest',
         help=(
             "The destination of the plot file."
             "\nMay be a full path, a directory, or a name."
             "\nIf a directory, this routine will create a name from DATAFILE."
             "\nIf a name, this routine will save the plot in the"
+            " same directory as DATAFILE."
+            "Paths and directories may be relative."
+        ),
+    )
+    p.add_argument(
+        '--textdest',
+        help=(
+            "The destination of the text file."
+            "\nMay be a full path, a directory, or a name."
+            "\nIf a directory, this routine will create a name from DATAFILE."
+            "\nIf a name, this routine will save the text in the"
             " same directory as DATAFILE."
             "Paths and directories may be relative."
         ),
