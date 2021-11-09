@@ -329,10 +329,9 @@ def parse_cli(parser: argparse.ArgumentParser):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser(
-        description=main.__doc__,
         allow_abbrev=False,
         formatter_class=argparse.RawTextHelpFormatter,
-        parents=[tools.plot_parser],
+        add_help=False,
     )
     p.add_argument(
         'datafile',
@@ -370,50 +369,15 @@ if __name__ == "__main__":
         ),
     )
     p.add_argument(
-        '--free',
-        help="names of free parameters",
-        nargs='*',
-        choices=tuple(seed.default_values.keys()),
-        metavar=("p0", "p1"),
-    )
-    p.add_argument(
-        '--fixed',
-        help="key-value pairs of parameters to hold fixed",
-        nargs='*',
-        value_type=float,
-        action=tools.StoreKeyValuePair,
-        metavar=("p0=value0", "p1=value1"),
-    )
-    p.add_argument(
-        '--initial',
-        help="key-value pairs of initial guesses",
-        nargs='*',
-        value_type=float,
-        action=tools.StoreKeyValuePair,
-        metavar=("p0=guess0", "p1=guess1"),
-    )
-    p.add_argument(
-        '--lower',
-        help="key-value pairs of lower bounds",
-        nargs='*',
-        value_type=float,
-        action=tools.StoreKeyValuePair,
-        metavar=("p0=lower0", "p1=lower1"),
-    )
-    p.add_argument(
-        '--upper',
-        help="key-value pairs of upper bounds",
-        nargs='*',
-        value_type=float,
-        action=tools.StoreKeyValuePair,
-        metavar=("p0=upper0", "p1=upper1"),
-    )
-    p.add_argument(
         '-v',
         '--verbose',
         help="Print runtime messages.",
         action='store_true',
     )
-    args = parse_cli(p)
+    parser = argparse.ArgumentParser(
+        description=main.__doc__,
+        parents=[p, seed.parser, tools.plot_parser],
+    )
+    args = parse_cli(parser)
     main(**args)
 

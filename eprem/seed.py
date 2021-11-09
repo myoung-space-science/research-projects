@@ -1,10 +1,12 @@
 """Parameters and tools related to the EPREM seed spectrum."""
 
+import argparse
 from typing import Callable, Union
 
 import numpy as np
 
 from .fits import FlexiFit
+from .tools import StoreKeyValuePair
 
 equation = (
     r"$J(E,r) = "
@@ -204,3 +206,48 @@ class Fitter:
                 'free' if k in self.context_dict['free'] else 'fixed'
             )
         return statuses
+
+
+parser = argparse.ArgumentParser(
+    add_help=False,
+    allow_abbrev=False,
+)
+parser.add_argument(
+    '--free',
+    help="The names of free parameters to fit",
+    nargs='*',
+    choices=tuple(default_values.keys()),
+    metavar=("p0", "p1"),
+)
+parser.add_argument(
+    '--fixed',
+    help="Key-value pairs of parameters to hold fixed when fitting",
+    nargs='*',
+    value_type=float,
+    action=StoreKeyValuePair,
+    metavar=("p0=value0", "p1=value1"),
+)
+parser.add_argument(
+    '--initial',
+    help="Key-value pairs of initial guesses for fit parameters",
+    nargs='*',
+    value_type=float,
+    action=StoreKeyValuePair,
+    metavar=("p0=guess0", "p1=guess1"),
+)
+parser.add_argument(
+    '--lower',
+    help="Key-value pairs of lower bounds on fit parameters",
+    nargs='*',
+    value_type=float,
+    action=StoreKeyValuePair,
+    metavar=("p0=lower0", "p1=lower1"),
+)
+parser.add_argument(
+    '--upper',
+    help="Key-value pairs of upper bounds on fit parameters",
+    nargs='*',
+    value_type=float,
+    action=StoreKeyValuePair,
+    metavar=("p0=upper0", "p1=upper1"),
+)
