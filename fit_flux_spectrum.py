@@ -188,7 +188,7 @@ def csv_header(fit: seed.Fitter, comment: str="#") -> list:
 def plot_fit(fit: seed.Fitter, opts: dict=None) -> None:
     """Compute and plot a fit to the spectrum."""
     kwargs = opts or {}
-    plt.plot(fit.energies, fit.fluxdata, label="data")
+    plt.plot(fit.energies, fit.fluxdata, label=kwargs['name'])
     plt.plot(fit.energies, fit.spectrum, label="fit")
     original_legend = plt.legend(loc='upper right')
     plt.gca().add_artist(parameter_legend(fit, loc=kwargs.get('legend')))
@@ -337,6 +337,12 @@ if __name__ == "__main__":
     p.add_argument(
         'datafile',
         help="The path to the file to read. May be relative.",
+    )
+    p.add_argument(
+        '-n',
+        '--name',
+        help="The name of this dataset in the plot legend.",
+        default="data",
     )
     p.add_argument(
         '-o',
