@@ -185,16 +185,17 @@ def csv_header(fit: seed.Fitter, comment: str="#") -> list:
     return [start, *info, end]
 
 
-def plot_fit(fit: seed.Fitter) -> None:
+def plot_fit(fit: seed.Fitter, opts: dict=None) -> None:
     """Compute and plot a fit to the spectrum."""
+    kwargs = opts or {}
     plt.plot(fit.energies, fit.fluxdata, label="data")
     plt.plot(fit.energies, fit.spectrum, label="fit")
     original_legend = plt.legend(loc='upper right')
-    plt.gca().add_artist(parameter_legend(fit))
+    plt.gca().add_artist(parameter_legend(fit, loc=kwargs.get('legend')))
     plt.gca().add_artist(original_legend)
 
 
-def parameter_legend(fit: seed.Fitter) -> Legend:
+def parameter_legend(fit: seed.Fitter, **kwargs) -> Legend:
     """Build a legend that displays spectrum parameters (fit or not)."""
     labels = fit.get_parameter_labels()
     handles = [
@@ -206,7 +207,7 @@ def parameter_legend(fit: seed.Fitter) -> Legend:
     return plt.legend(
         handles=handles,
         handlelength=0.0,
-        loc='lower left',
+        **kwargs
     )
 
 
@@ -300,7 +301,7 @@ def main(theory: dict=None, **opts):
     if 'free' in fit_kw:
         fit = compute_fit(energies, spectrum, uncertainties, **fit_kw)
         write_fit(fit, opts)
-        plot_fit(fit)
+        plot_fit(fit, opts)
     finalize_plot(opts)
 
 

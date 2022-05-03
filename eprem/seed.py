@@ -251,3 +251,10 @@ parser.add_argument(
     action=StoreKeyValuePair,
     metavar=("p0=upper0", "p1=upper1"),
 )
+parser.add_argument(
+    '--legend',
+    help=(
+        "Location at which to add parameter legend"
+        "\nSee matplotlib.pyplot.legend documentation for options"
+    ),
+)
