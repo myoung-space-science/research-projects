@@ -298,7 +298,7 @@ def main(theory: dict=None, **opts):
     plot_kw = parse_opts(opts, valid_plot_kw)
     plot_spectrum(energies, spectrum, **plot_kw)
     fit_kw = parse_opts(opts, valid_fit_kw)
-    if 'free' in fit_kw:
+    if fit_kw.get('free'):
         fit = compute_fit(energies, spectrum, uncertainties, **fit_kw)
         write_fit(fit, opts)
         plot_fit(fit, opts)
