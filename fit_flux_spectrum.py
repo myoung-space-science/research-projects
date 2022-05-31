@@ -145,7 +145,7 @@ def compute_fit(
     **fit_kw
 ) -> seed.Fitter:
     """Compute a fit to the spectrum as a function of energy."""
-    if uncertainties.size == 0:
+    if uncertainties.size == 0 or np.nansum(uncertainties) == 0:
         uncertainties = None
     return seed.Fitter(
         energies,
