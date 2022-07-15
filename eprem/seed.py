@@ -11,27 +11,27 @@ from .tools import StoreKeyValuePair
 equation = (
     r"$J(E,r) = "
     r"\left(J_0/\xi\right)"
-    r"\left(E/E_r\right)^{-\gamma_s}"
-    r"e^{-E/E_0}$"
+    r"\left(E/E_0\right)^{-\gamma_s}"
+    r"e^{-E/E_c}$"
 )
 
 default_values = {
     'J0': 20.0,
     'xi': 1.0,
-    'Er': 1.0,
+    'E0': 1.0,
     'gamma': 1.5,
-    'E0': 2.0,
+    'Ec': 2.0,
 }
 
 tex_strings = {
     'J0': r'$J_0$',
     'xi': r'$\xi$',
-    'Er': r'$E_r$',
-    'gamma': r'$\gamma$',
     'E0': r'$E_0$',
+    'gamma': r'$\gamma$',
+    'Ec': r'$E_c$',
 }
 
-def J(E, J0, xi, Er, gamma, E0):
+def J(E, J0, xi, E0, gamma, Ec):
     """Differential flux version of the EPREM seed spectrum.
 
     This function is similar to the function defined in
@@ -40,8 +40,8 @@ def J(E, J0, xi, Er, gamma, E0):
     function of energy; the user may then factor in radial dependence.
     """
     amplitude = J0 / xi
-    power_law = np.power(E / Er, -1.0*gamma)
-    exponential_term = np.exp(-1.0*E / E0)
+    power_law = np.power(E / E0, -1.0*gamma)
+    exponential_term = np.exp(-1.0*E / Ec)
     return amplitude * power_law * exponential_term
 
 
